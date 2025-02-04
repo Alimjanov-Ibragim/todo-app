@@ -1,10 +1,16 @@
 'use client';
 
 import React from 'react';
-import { useForm, SubmitHandler, SubmitErrorHandler } from 'react-hook-form';
+import {
+  useForm,
+  SubmitHandler,
+  SubmitErrorHandler,
+  Controller
+} from 'react-hook-form';
+import SimpleMDE from 'react-simplemde-editor';
 
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import 'easymde/dist/easymde.min.css';
 
 type FormValues = {
   title: string;
@@ -12,7 +18,7 @@ type FormValues = {
 };
 
 const TodosPage = () => {
-  const { register, handleSubmit } = useForm<FormValues>();
+  const { handleSubmit, control } = useForm<FormValues>();
   const onSubmit: SubmitHandler<FormValues> = data => console.log(data);
   const onError: SubmitErrorHandler<FormValues> = errors => console.log(errors);
 
@@ -27,12 +33,24 @@ const TodosPage = () => {
           onSubmit={handleSubmit(onSubmit, onError)}
           className="flex flex-col gap-[10px]"
         >
-          <Input {...register('title')} placeholder="Add todo title" />
-          <Textarea
-            {...register('description')}
-            placeholder="Add todo description"
+          <Controller
+            name="title"
+            control={control}
+            render={({ field }) => (
+              <Input {...field} placeholder="Add todo title" />
+            )}
           />
-
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => (
+              <SimpleMDE
+                {...field}
+                onChange={value => field.onChange(value)}
+                value={field.value}
+              />
+            )}
+          />
           <Input type="submit" value="Add todo" />
         </form>
       </div>
