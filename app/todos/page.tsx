@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { Input } from '@/components/ui/input';
+import ErrorMessage from '@/app/components/ErrorMessage';
 import { createTodoSchema } from '@/app/validationSchemas';
 import 'easymde/dist/easymde.min.css';
 
@@ -48,17 +49,13 @@ const TodosPage = () => {
           className="flex flex-col gap-[10px]"
         >
           <Input {...register('title')} placeholder="Add todo title" />
-          {errors.title && (
-            <p className="text-sm text-red-500">{errors.title.message}</p>
-          )}
+          <ErrorMessage>{errors.title?.message}</ErrorMessage>
           <Controller
             name="description"
             control={control}
             render={({ field }) => <SimpleMDE {...field} />}
           />
-          {errors.description && (
-            <p className="text-sm text-red-500">{errors.description.message}</p>
-          )}
+          <ErrorMessage>{errors.description?.message}</ErrorMessage>
           <Input type="submit" value="Add todo" />
         </form>
       </div>
