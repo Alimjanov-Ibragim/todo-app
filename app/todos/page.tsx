@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import SimpleMDE from 'react-simplemde-editor';
-import axios from 'axios';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -14,6 +13,7 @@ import ErrorMessage from '@/app/components/ErrorMessage';
 import Spinner from '@/app/components/Spinner';
 import { createTodoSchema } from '@/app/validationSchemas';
 import 'easymde/dist/easymde.min.css';
+import { TodosServiceInstance } from '@/shared/services/todosAxios';
 
 type TodoForm = z.infer<typeof createTodoSchema>;
 
@@ -31,8 +31,8 @@ const TodosPage = () => {
   const onSubmit: SubmitHandler<TodoForm> = async data => {
     try {
       setIsSubmitting(true);
-      await axios.post('/api/todos', data);
       console.log(data);
+      await TodosServiceInstance.fetchTodos(data);
       setIsSubmitting(false);
     } catch (error) {
       toast.error('An unexpected error occured. Please try again.', {
