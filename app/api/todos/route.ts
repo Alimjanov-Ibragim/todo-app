@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const newTodo = await prisma.todo.create({
+  const newTodo = await prisma.todos.create({
     data: {
       title: body.title,
       description: body.description
