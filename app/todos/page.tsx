@@ -1,14 +1,10 @@
 'use client';
 
 import React from 'react';
-import {
-  useForm,
-  SubmitHandler,
-  SubmitErrorHandler,
-  Controller
-} from 'react-hook-form';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import SimpleMDE from 'react-simplemde-editor';
 import axios from 'axios';
+import { toast } from 'sonner';
 
 import { Input } from '@/components/ui/input';
 import 'easymde/dist/easymde.min.css';
@@ -20,11 +16,18 @@ type FormValues = {
 
 const TodosPage = () => {
   const { register, handleSubmit, control } = useForm<FormValues>();
+
   const onSubmit: SubmitHandler<FormValues> = async data => {
-    console.log(data);
-    await axios.post('/api/todos', data);
+    try {
+      await axios.post('/api/todos', data);
+      console.log(data);
+    } catch (error) {
+      toast.error('An unexpected error occured. Please try again.', {
+        position: 'top-right'
+      });
+      console.log('error', error);
+    }
   };
-  const onError: SubmitErrorHandler<FormValues> = errors => console.log(errors);
 
   return (
     <div className="grid grid-cols-2 gap-[40px]">
@@ -34,7 +37,7 @@ const TodosPage = () => {
       </ul>
       <div>
         <form
-          onSubmit={handleSubmit(onSubmit, onError)}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-[10px]"
         >
           <Input {...register('title')} placeholder="Add todo title" />
