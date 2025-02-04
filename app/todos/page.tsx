@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import SimpleMDE from 'react-simplemde-editor';
 import axios from 'axios';
@@ -9,13 +9,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import ErrorMessage from '@/app/components/ErrorMessage';
+import Spinner from '@/app/components/Spinner';
 import { createTodoSchema } from '@/app/validationSchemas';
 import 'easymde/dist/easymde.min.css';
 
 type TodoForm = z.infer<typeof createTodoSchema>;
 
 const TodosPage = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
     handleSubmit,
@@ -27,12 +30,15 @@ const TodosPage = () => {
 
   const onSubmit: SubmitHandler<TodoForm> = async data => {
     try {
+      setIsSubmitting(true);
       await axios.post('/api/todos', data);
       console.log(data);
+      setIsSubmitting(false);
     } catch (error) {
       toast.error('An unexpected error occured. Please try again.', {
         position: 'top-right'
       });
+      setIsSubmitting(false);
       console.log('error', error);
     }
   };
@@ -56,7 +62,9 @@ const TodosPage = () => {
             render={({ field }) => <SimpleMDE {...field} />}
           />
           <ErrorMessage>{errors.description?.message}</ErrorMessage>
-          <Input type="submit" value="Add todo" />
+          <Button type="submit" disabled={isSubmitting}>
+            Add {isSubmitting && <Spinner />}
+          </Button>
         </form>
       </div>
     </div>
