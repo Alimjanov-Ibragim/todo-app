@@ -1,18 +1,18 @@
 // import { addHeadersToRequest } from '@/shared/interceptors/addHeadersToRequest.interceptor';
 // import { errorHandlerInterceptor } from '@/shared/interceptors/errorHandler.interceptor';
-import { z } from "zod";
+import { z } from 'zod';
 
-import { createTodoSchema } from "@/app/validationSchemas";
-import { AxiosService } from "@/shared/services/axiosService.service";
+import { createTodoSchema } from '@/app/validationSchemas';
+import { AxiosService } from '@/shared/services/axiosService.service';
 
 type TodoForm = z.infer<typeof createTodoSchema>;
 
 const baseAxiosConfig = {
-  baseURL: "/",
+  baseURL: '/'
 };
 
 const AxiosUrls = {
-  todos: "/api/todos",
+  todos: '/api/todos'
 };
 
 const axiosService = new AxiosService();
@@ -27,6 +27,10 @@ export class TodosService {
   public async fetchTodos() {
     const { data } = await todosAxios.get(AxiosUrls.todos);
     return data;
+  }
+
+  public async deleteTodo(id: string) {
+    return todosAxios.delete(AxiosUrls.todos, { params: { id } });
   }
 }
 
