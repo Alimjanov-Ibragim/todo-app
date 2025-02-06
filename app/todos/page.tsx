@@ -101,65 +101,68 @@ const TodosPage = () => {
   };
 
   return (
-    <div className="grid grid-cols-2 gap-[40px]">
-      <div>
-        {isLoading ? (
-          <Spinner />
-        ) : isError ? (
-          <ErrorMessage>Failed to fetch todos</ErrorMessage>
-        ) : (
-          <ul className="list-disc">
-            {todos.map((todo: ExtendedTodo) => (
-              <li key={todo.id} className="flex items-center gap-[10px]">
-                <h4>{todo.title}</h4>
-                <p>{todo.description}</p>
+    <div>
+      <h1>Todos</h1>
+      <div className="grid grid-cols-2 gap-[40px]">
+        <div>
+          {isLoading ? (
+            <Spinner />
+          ) : isError ? (
+            <ErrorMessage>Failed to fetch todos</ErrorMessage>
+          ) : (
+            <ul className="list-disc">
+              {todos.map((todo: ExtendedTodo) => (
+                <li key={todo.id} className="flex items-center gap-[10px]">
+                  <h4>{todo.title}</h4>
+                  <p>{todo.description}</p>
 
-                <Select
-                  onValueChange={(e: TStatus) =>
-                    handleChangeStatus(e, String(todo.id))
-                  }
-                  defaultValue={todo.status}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Status</SelectLabel>
-                      <SelectItem value="OPEN">open</SelectItem>
-                      <SelectItem value="IN_PROGRESS">in progress</SelectItem>
-                      <SelectItem value="COMPLETED">completed</SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <button
-                  onClick={() => deleteTodo(String(todo.id))}
-                  className="text-white bg-red-500"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-      <div>
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col gap-[10px]"
-        >
-          <Input {...register("title")} placeholder="Add todo title" />
-          <ErrorMessage>{errors.title?.message}</ErrorMessage>
-          <Controller
-            name="description"
-            control={control}
-            render={({ field }) => <SimpleMDE {...field} />}
-          />
-          <ErrorMessage>{errors.description?.message}</ErrorMessage>
-          <Button type="submit" disabled={isSubmitting}>
-            Add {isSubmitting && <Spinner />}
-          </Button>
-        </form>
+                  <Select
+                    onValueChange={(e: TStatus) =>
+                      handleChangeStatus(e, String(todo.id))
+                    }
+                    defaultValue={todo.status}
+                  >
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Status</SelectLabel>
+                        <SelectItem value="OPEN">open</SelectItem>
+                        <SelectItem value="IN_PROGRESS">in progress</SelectItem>
+                        <SelectItem value="COMPLETED">completed</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <button
+                    onClick={() => deleteTodo(String(todo.id))}
+                    className="text-white bg-red-500"
+                  >
+                    Delete
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-[10px]"
+          >
+            <Input {...register("title")} placeholder="Add todo title" />
+            <ErrorMessage>{errors.title?.message}</ErrorMessage>
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => <SimpleMDE {...field} />}
+            />
+            <ErrorMessage>{errors.description?.message}</ErrorMessage>
+            <Button type="submit" disabled={isSubmitting}>
+              Add {isSubmitting && <Spinner />}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );
