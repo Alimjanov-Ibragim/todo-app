@@ -2,8 +2,8 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { TodosServiceInstance } from '@/shared/services/todosAxios';
-import Spinner from '@/app/components/Spinner';
-import ErrorMessage from '@/app/components/ErrorMessage';
+import { Spinner } from '@/app/components';
+import { ErrorMessage } from '@/app/components';
 
 type TPost = {
   userId: number;

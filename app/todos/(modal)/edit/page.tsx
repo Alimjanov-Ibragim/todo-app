@@ -20,8 +20,8 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import ErrorMessage from '@/app/components/ErrorMessage';
-import Spinner from '@/app/components/Spinner';
+import { ErrorMessage } from '@/app/components';
+import { Spinner } from '@/app/components';
 import { createTodoSchemaWithoutUserId } from '@/app/validationSchemas';
 import { TodosServiceInstance } from '@/shared/services/todosAxios';
 import { TodoForm, ExtendedTodo } from '@/lib/types';

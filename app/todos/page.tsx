@@ -16,12 +16,12 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import ErrorMessage from '@/app/components/ErrorMessage';
-import Spinner from '@/app/components/Spinner';
+import { ErrorMessage } from '@/app/components';
+import { Spinner } from '@/app/components';
 import { TodosServiceInstance } from '@/shared/services/todosAxios';
 import { ExtendedTodo, TStatus } from '@/lib/types';
 import 'easymde/dist/easymde.min.css';
-import LogoutButton from '../components/LogoutButton';
+import { LogoutButton } from '@/app/components';
 
 const TodosPage = () => {
   const queryClient = useQueryClient();

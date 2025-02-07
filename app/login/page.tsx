@@ -9,8 +9,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import ErrorMessage from '@/app/components/ErrorMessage';
-import Spinner from '@/app/components/Spinner';
+import { ErrorMessage } from '@/app/components';
+import { Spinner } from '@/app/components';
 import { profileSchemaWithoutName } from '@/app/validationSchemas';
 import { TProfileWithoutName } from '@/lib/types';
 
