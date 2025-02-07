@@ -74,58 +74,70 @@ const TodosPage = () => {
   if (!session && status === 'unauthenticated') return <p>Доступ запрещён</p>;
 
   return (
-    <div>
+    <div className="flex flex-col gap-[40px]">
       <div>
-        <h1>Todos</h1>
-        <div className="flex items-end gap-[10px]">
+        <h1 className="font-bold">Todos</h1>
+        <div className="flex items-end justify-between gap-[10px]">
           <Button onClick={() => router.push(`/todos/create`)}>
             Create todo
           </Button>
           <div className="flex flex-col">
-            <strong>{session?.user?.name || session?.user?.email}</strong>
+            <strong>User: {session?.user?.name || session?.user?.email}</strong>
             <LogoutButton />
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-[40px]">
+      <div className="grid grid-cols-1 gap-[40px]">
         <div>
           {isLoading ? (
             <Spinner />
           ) : isError ? (
             <ErrorMessage>Failed to fetch todos</ErrorMessage>
           ) : (
-            <ul className="list-disc">
+            <ul className="p-[10px] border rounded-[8px]">
               {todos.map((todo: ExtendedTodo) => (
-                <li key={todo.id} className="flex items-center gap-[10px]">
-                  <h4 onClick={() => router.push(`/todos/edit/?id=${todo.id}`)}>
-                    {todo.title}
-                  </h4>
-                  <p>{todo.description}</p>
+                <li
+                  key={todo.id}
+                  className="flex justify-between items-start gap-[10px] p-[10px] border-b border-gray-500"
+                >
+                  <div>
+                    <h4
+                      className="font-bold"
+                      onClick={() => router.push(`/todos/edit/?id=${todo.id}`)}
+                    >
+                      {todo.title}
+                    </h4>
+                    <p>{todo.description}</p>
+                  </div>
 
-                  <Select
-                    onValueChange={(e: TStatus) =>
-                      handleChangeStatus(e, String(todo.id))
-                    }
-                    defaultValue={todo.status}
-                  >
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Status</SelectLabel>
-                        <SelectItem value="OPEN">open</SelectItem>
-                        <SelectItem value="IN_PROGRESS">in progress</SelectItem>
-                        <SelectItem value="COMPLETED">completed</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                  <button
-                    onClick={() => deleteTodo(String(todo.id))}
-                    className="text-white bg-red-500"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex flex-col items-end gap-[10px]">
+                    <Select
+                      onValueChange={(e: TStatus) =>
+                        handleChangeStatus(e, String(todo.id))
+                      }
+                      defaultValue={todo.status}
+                    >
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Status</SelectLabel>
+                          <SelectItem value="OPEN">open</SelectItem>
+                          <SelectItem value="IN_PROGRESS">
+                            in progress
+                          </SelectItem>
+                          <SelectItem value="COMPLETED">completed</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <button
+                      onClick={() => deleteTodo(String(todo.id))}
+                      className="px-[10px] py-[5px] text-white bg-red-500 rounded-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

@@ -23,15 +23,19 @@ const SidebarContent = () => {
   });
   return (
     <div>
-      <h2>Sidebar</h2>
+      <h2 className="font-bold">Sidebar</h2>
       {isLoading ? (
         <Spinner />
       ) : isError ? (
         <ErrorMessage>Failed to fetch todos</ErrorMessage>
       ) : (
-        <ul>
+        <ul className="flex flex-col gap-[10px] p-[10px] border border-green-600 rounded-sm">
           {posts &&
-            posts.map((post: TPost) => <li key={post.id}>{post.title}</li>)}
+            posts.map((post: TPost) => (
+              <li className="border-b border-green-200" key={post.id}>
+                {post.title}
+              </li>
+            ))}
         </ul>
       )}
     </div>

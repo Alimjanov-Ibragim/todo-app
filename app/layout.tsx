@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Roboto } from 'next/font/google';
 
-import { Toaster } from '@/components/ui/sonner';
 import { ClientProviders } from '@/app/ClientProviders';
 import './globals.css';
 
@@ -23,10 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${roboto.variable} antialiased`}>
+      <body className={`${roboto.variable} antialiased bg-slate-100`}>
         <ClientProviders>
           <main className="max-w-3xl mx-auto py-[40px]">{children}</main>
-          <Toaster />
         </ClientProviders>
       </body>
     </html>

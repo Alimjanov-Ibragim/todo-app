@@ -53,7 +53,13 @@ Apply migrations:
 npx prisma migrate dev --name init
 ```
 
-### 5. Launching Next.js application:
+### 5. Add next.js auth secret:
+
+```bash
+NEXTAUTH_SECRET="your_secret_key"
+```
+
+### 6. Launching Next.js application:
 
 If the application is not containerized, run:
 
