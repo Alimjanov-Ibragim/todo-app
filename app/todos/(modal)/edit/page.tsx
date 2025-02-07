@@ -1,20 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import SimpleMDE from 'react-simplemde-editor';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import Spinner from '@/app/components/Spinner';
 import { createTodoSchema } from '@/app/validationSchemas';
 import { TodosServiceInstance } from '@/shared/services/todosAxios';
-import { TodoForm } from '@/lib/types';
+import { ExtendedTodo } from '@/lib/types';
 import 'easymde/dist/easymde.min.css';
 
 export default function EditTodoPage() {
@@ -22,20 +31,56 @@ export default function EditTodoPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const todoId = searchParams.get('id') as string;
+  const {
+    data: todos,
+    isLoading,
+    isError
+  } = useQuery({
+    queryKey: ['todos'],
+    queryFn: TodosServiceInstance.fetchTodos
+  });
+
+  const todoToEdit = todos?.find(
+    (todo: ExtendedTodo) => String(todo.id) === todoId
+  );
+
   const {
     register,
     handleSubmit,
     control,
     reset,
     formState: { errors }
-  } = useForm<TodoForm>({
+  } = useForm<ExtendedTodo>({
+    defaultValues: {
+      title: '',
+      description: '',
+      status: 'OPEN'
+    },
     resolver: zodResolver(createTodoSchema)
   });
 
-  const onSubmit: SubmitHandler<TodoForm> = async data => {
+  useEffect(() => {
+    if (todoToEdit) {
+      reset({
+        title: todoToEdit.title,
+        description: todoToEdit.description,
+        status: todoToEdit.status
+      });
+    }
+  }, [todoToEdit, reset]);
+
+  const onSubmit: SubmitHandler<ExtendedTodo> = async data => {
     try {
+      const updatedTodo = {
+        id: todoId,
+        title: data.title,
+        description: data.description,
+        status: data.status
+      };
       setIsSubmitting(true);
-      await TodosServiceInstance.createTodos(data);
+      await TodosServiceInstance.editTodo(updatedTodo);
       setIsSubmitting(false);
       reset();
       toast({
@@ -43,6 +88,7 @@ export default function EditTodoPage() {
       });
 
       queryClient.invalidateQueries({ queryKey: ['todos'] });
+      router.push('/todos');
     } catch (error) {
       toast({
         title: 'An unexpected error occured. Please try again.'
@@ -51,6 +97,11 @@ export default function EditTodoPage() {
       console.log('error', error);
     }
   };
+
+  if (isLoading) return <Spinner />;
+  if (isError) return <ErrorMessage>Error loading todos</ErrorMessage>;
+
+  if (!todoToEdit) return <div>Todo not found</div>;
 
   return (
     <div className="modal-overlay">
@@ -66,9 +117,31 @@ export default function EditTodoPage() {
           <Controller
             name="description"
             control={control}
-            render={({ field }) => <SimpleMDE {...field} />}
+            render={({ field }) => (
+              <SimpleMDE {...field} placeholder="Add todo description" />
+            )}
           />
           <ErrorMessage>{errors.description?.message}</ErrorMessage>
+          <Controller
+            name="status"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Status</SelectLabel>
+                    <SelectItem value="OPEN">open</SelectItem>
+                    <SelectItem value="IN_PROGRESS">in progress</SelectItem>
+                    <SelectItem value="COMPLETED">completed</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            )}
+          />
+          <ErrorMessage>{errors.status?.message}</ErrorMessage>
           <Button type="submit" disabled={isSubmitting}>
             Save {isSubmitting && <Spinner />}
           </Button>

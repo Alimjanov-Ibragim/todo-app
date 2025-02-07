@@ -17,7 +17,7 @@ import { TodosServiceInstance } from '@/shared/services/todosAxios';
 import { TodoForm } from '@/lib/types';
 import 'easymde/dist/easymde.min.css';
 
-export default function CreateTodoPage({ todoId }: { todoId: string }) {
+export default function CreateTodoPage() {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -29,9 +29,13 @@ export default function CreateTodoPage({ todoId }: { todoId: string }) {
     reset,
     formState: { errors }
   } = useForm<TodoForm>({
+    defaultValues: {
+      title: '',
+      description: '',
+      status: 'OPEN'
+    },
     resolver: zodResolver(createTodoSchema)
   });
-  console.log('todoId: ', todoId);
 
   const onSubmit: SubmitHandler<TodoForm> = async data => {
     try {
@@ -42,8 +46,8 @@ export default function CreateTodoPage({ todoId }: { todoId: string }) {
       toast({
         title: 'Todo created successfully'
       });
-
       queryClient.invalidateQueries({ queryKey: ['todos'] });
+      router.push('/todos');
     } catch (error) {
       toast({
         title: 'An unexpected error occured. Please try again.'
@@ -67,7 +71,9 @@ export default function CreateTodoPage({ todoId }: { todoId: string }) {
           <Controller
             name="description"
             control={control}
-            render={({ field }) => <SimpleMDE {...field} />}
+            render={({ field }) => (
+              <SimpleMDE {...field} placeholder="Add todo description" />
+            )}
           />
           <ErrorMessage>{errors.description?.message}</ErrorMessage>
           <Button type="submit" disabled={isSubmitting}>

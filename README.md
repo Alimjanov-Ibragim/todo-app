@@ -21,6 +21,14 @@ DATABASE_URL="mysql://root:MyPassword@localhost:3306/todos"
 Make sure Docker and docker-compose are installed.
 In the root of the project (where docker-compose.yml is located), run:
 
+- Docker Compose v2:
+
+```bash
+docker compose up -d
+```
+
+- Docker Compose v1:
+
 ```bash
 docker-compose up -d
 ```

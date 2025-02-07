@@ -44,6 +44,15 @@ export class TodosService {
     );
     return data;
   }
+
+  public async editTodo(data: {
+    id: string;
+    status: TStatus;
+    title: string;
+    description: string;
+  }) {
+    return todosAxios.patch(AxiosUrls.todos, data);
+  }
 }
 
 export const TodosServiceInstance = new TodosService();
