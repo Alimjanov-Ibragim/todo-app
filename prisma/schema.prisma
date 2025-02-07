@@ -20,10 +20,22 @@ model Todos {
   status      Status   @default(OPEN)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  userId      Int
+  user        User    @relation(fields: [userId], references: [id])
 }
 
 enum Status {
   OPEN
   IN_PROGRESS
   COMPLETED
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  todos     Todos[]
 }

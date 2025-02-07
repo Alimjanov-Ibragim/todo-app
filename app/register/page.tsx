@@ -1,6 +1,5 @@
 'use client';
 
-import { signIn } from 'next-auth/react';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm, SubmitHandler } from 'react-hook-form';
@@ -11,10 +10,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import Spinner from '@/app/components/Spinner';
-import { profileSchemaWithoutName } from '@/app/validationSchemas';
-import { TProfileWithoutName } from '@/lib/types';
+import { profileSchema } from '@/app/validationSchemas';
+import { ProfileServiceInstance } from '@/shared/services/profileAxios';
+import { TProfile } from '@/lib/types';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -23,27 +23,24 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors }
-  } = useForm<TProfileWithoutName>({
+  } = useForm<TProfile>({
     defaultValues: {
       email: '',
-      password: ''
+      password: '',
+      name: ''
     },
-    resolver: zodResolver(profileSchemaWithoutName)
+    resolver: zodResolver(profileSchema)
   });
 
-  const onSubmit: SubmitHandler<TProfileWithoutName> = async data => {
+  const onSubmit: SubmitHandler<TProfile> = async data => {
     try {
       setIsSubmitting(true);
-      await signIn('credentials', {
-        redirect: false,
-        email: data.email,
-        password: data.password
-      });
+      await ProfileServiceInstance.registerUser(data);
       setIsSubmitting(false);
       toast({
-        title: 'You logged in successfully'
+        title: 'You registered successfully'
       });
-      router.push('/todos');
+      router.push('/login');
     } catch (error) {
       toast({
         title: 'An unexpected error occured. Please try again.'
@@ -55,12 +52,15 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col gap-[20px] max-w-[400px] mx-auto p-4">
-      <h1 className="font-bold">Logging in</h1>
+      <h1 className="font-bold">Registration</h1>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="flex flex-col gap-[10px]"
       >
+        <Input {...register('name')} placeholder="Your name" />
+        <ErrorMessage>{errors.name?.message}</ErrorMessage>
+
         <Input {...register('email')} placeholder="Your email" />
         <ErrorMessage>{errors.email?.message}</ErrorMessage>
 
@@ -68,7 +68,7 @@ export default function LoginPage() {
         <ErrorMessage>{errors.password?.message}</ErrorMessage>
 
         <Button type="submit" disabled={isSubmitting}>
-          LogIn {isSubmitting && <Spinner />}
+          Register {isSubmitting && <Spinner />}
         </Button>
       </form>
     </div>

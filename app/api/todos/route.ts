@@ -1,28 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/prisma/client';
 import { createTodoSchema } from '@/app/validationSchemas';
+import { getToken } from 'next-auth/jwt';
 
 export async function POST(request: NextRequest) {
+  const token = await getToken({ req: request });
+  if (!token || !token.id) {
+    return NextResponse.json({ message: 'Не авторизован' }, { status: 401 });
+  }
+
   const body = await request.json();
   const validation = createTodoSchema.safeParse(body);
   if (!validation.success) {
-    return NextResponse.json(validation.error.format(), {
-      status: 400
-    });
+    return NextResponse.json(validation.error.format(), { status: 400 });
   }
 
   const newTodo = await prisma.todos.create({
     data: {
       title: body.title,
-      description: body.description
+      description: body.description,
+      userId: token.id as number
     }
   });
   return NextResponse.json(newTodo, { status: 201 });
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const token = await getToken({ req: request });
+  if (!token || !token.id) {
+    return NextResponse.json({ message: 'Не авторизован' }, { status: 401 });
+  }
+
   try {
-    const todos = await prisma.todos.findMany();
+    const todos = await prisma.todos.findMany({
+      where: { userId: token.id }
+    });
     return NextResponse.json(todos, { status: 200 });
   } catch (error) {
     return NextResponse.json(
@@ -33,17 +45,32 @@ export async function GET() {
 }
 
 export async function DELETE(request: NextRequest) {
+  const token = await getToken({ req: request });
+  if (!token || !token.id) {
+    return NextResponse.json({ message: 'Не авторизован' }, { status: 401 });
+  }
+
   const id = request.nextUrl.searchParams.get('id');
   if (!id) {
     return NextResponse.json({ message: 'Id is required' }, { status: 400 });
   }
+
   try {
-    const deletedTodo = await prisma.todos.delete({
+    const deletedTodo = await prisma.todos.deleteMany({
       where: {
-        id: Number(id)
+        id: Number(id),
+        userId: token.id
       }
     });
-    return NextResponse.json(deletedTodo, { status: 200 });
+
+    if (deletedTodo.count === 0) {
+      return NextResponse.json(
+        { message: 'Задача не найдена' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ message: 'Задача удалена' }, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: 'Error while deleting todo', error },
@@ -53,6 +80,11 @@ export async function DELETE(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  const token = await getToken({ req: request });
+  if (!token || !token.id) {
+    return NextResponse.json({ message: 'Не авторизован' }, { status: 401 });
+  }
+
   try {
     const { id, status } = await request.json();
 
@@ -75,16 +107,24 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const updatedTodo = await prisma.todos.update({
+    const updatedTodo = await prisma.todos.updateMany({
       where: {
-        id: Number(id)
+        id: Number(id),
+        userId: token.id
       },
       data: {
         status
       }
     });
 
-    return NextResponse.json(updatedTodo, { status: 200 });
+    if (updatedTodo.count === 0) {
+      return NextResponse.json(
+        { message: 'Задача не найдена' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ message: 'Статус обновлен' }, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: 'Error while updating todo status', error },
@@ -94,6 +134,11 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const token = await getToken({ req: request });
+  if (!token || !token.id) {
+    return NextResponse.json({ message: 'Не авторизован' }, { status: 401 });
+  }
+
   const body = await request.json();
   const validation = createTodoSchema.safeParse(body);
   if (!validation.success) {
@@ -101,15 +146,26 @@ export async function PATCH(request: NextRequest) {
   }
 
   try {
-    const updatedTodo = await prisma.todos.update({
-      where: { id: Number(body.id) },
+    const updatedTodo = await prisma.todos.updateMany({
+      where: {
+        id: Number(body.id),
+        userId: token.id
+      },
       data: {
         title: body.title,
         description: body.description,
         status: body.status
       }
     });
-    return NextResponse.json(updatedTodo, { status: 200 });
+
+    if (updatedTodo.count === 0) {
+      return NextResponse.json(
+        { message: 'Задача не найдена' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ message: 'Задача обновлена' }, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: 'Failed to update todo', error },

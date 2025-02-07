@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -20,10 +21,12 @@ import Spinner from '@/app/components/Spinner';
 import { TodosServiceInstance } from '@/shared/services/todosAxios';
 import { ExtendedTodo, TStatus } from '@/lib/types';
 import 'easymde/dist/easymde.min.css';
+import LogoutButton from '../components/LogoutButton';
 
 const TodosPage = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const {
     data: todos,
@@ -68,10 +71,22 @@ const TodosPage = () => {
     }
   };
 
+  if (!session && status === 'unauthenticated') return <p>Доступ запрещён</p>;
+
   return (
     <div>
-      <h1>Todos</h1>
-      <Button onClick={() => router.push(`/todos/create`)}>Create todo</Button>
+      <div>
+        <h1>Todos</h1>
+        <div className="flex items-end gap-[10px]">
+          <Button onClick={() => router.push(`/todos/create`)}>
+            Create todo
+          </Button>
+          <div className="flex flex-col">
+            <strong>{session?.user?.name || session?.user?.email}</strong>
+            <LogoutButton />
+          </div>
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-[40px]">
         <div>
           {isLoading ? (

@@ -1,10 +1,14 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import { createTodoSchema } from "@/app/validationSchemas";
+import { createTodoSchema } from '@/app/validationSchemas';
 
 export type TodoForm = z.infer<typeof createTodoSchema>;
 
-export type TStatus = "OPEN" | "CLOSED" | "IN_PROGRESS";
+export type TExtendedTodoForm = TodoForm & {
+  userId: number;
+};
+
+export type TStatus = 'OPEN' | 'COMPLETED' | 'IN_PROGRESS';
 
 export type ExtendedTodo = TodoForm & {
   id: number;
@@ -12,3 +16,11 @@ export type ExtendedTodo = TodoForm & {
   createdAt: string;
   updatedAt: string;
 };
+
+export type TProfile = {
+  email: string;
+  password: string;
+  name: string;
+};
+
+export type TProfileWithoutName = Omit<TProfile, 'name'>;

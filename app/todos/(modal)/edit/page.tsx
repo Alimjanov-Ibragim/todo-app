@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import SimpleMDE from 'react-simplemde-editor';
+import { useSession } from 'next-auth/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { useToast } from '@/hooks/use-toast';
@@ -21,12 +22,13 @@ import {
 } from '@/components/ui/select';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import Spinner from '@/app/components/Spinner';
-import { createTodoSchema } from '@/app/validationSchemas';
+import { createTodoSchemaWithoutUserId } from '@/app/validationSchemas';
 import { TodosServiceInstance } from '@/shared/services/todosAxios';
-import { ExtendedTodo } from '@/lib/types';
+import { TodoForm, ExtendedTodo } from '@/lib/types';
 import 'easymde/dist/easymde.min.css';
 
 export default function EditTodoPage() {
+  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -42,7 +44,7 @@ export default function EditTodoPage() {
     queryFn: TodosServiceInstance.fetchTodos
   });
 
-  const todoToEdit = todos?.find(
+  const todoToEdit: ExtendedTodo = todos?.find(
     (todo: ExtendedTodo) => String(todo.id) === todoId
   );
 
@@ -52,13 +54,13 @@ export default function EditTodoPage() {
     control,
     reset,
     formState: { errors }
-  } = useForm<ExtendedTodo>({
+  } = useForm<TodoForm>({
     defaultValues: {
       title: '',
       description: '',
       status: 'OPEN'
     },
-    resolver: zodResolver(createTodoSchema)
+    resolver: zodResolver(createTodoSchemaWithoutUserId)
   });
 
   useEffect(() => {
@@ -71,13 +73,14 @@ export default function EditTodoPage() {
     }
   }, [todoToEdit, reset]);
 
-  const onSubmit: SubmitHandler<ExtendedTodo> = async data => {
+  const onSubmit: SubmitHandler<TodoForm> = async data => {
     try {
       const updatedTodo = {
         id: todoId,
         title: data.title,
         description: data.description,
-        status: data.status
+        status: data.status,
+        userId: (session?.user as { id?: number }).id || -1
       };
       setIsSubmitting(true);
       await TodosServiceInstance.editTodo(updatedTodo);

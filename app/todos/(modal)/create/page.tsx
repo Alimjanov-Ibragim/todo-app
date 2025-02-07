@@ -6,6 +6,7 @@ import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
 import SimpleMDE from 'react-simplemde-editor';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useSession } from 'next-auth/react';
 
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -14,10 +15,11 @@ import ErrorMessage from '@/app/components/ErrorMessage';
 import Spinner from '@/app/components/Spinner';
 import { createTodoSchema } from '@/app/validationSchemas';
 import { TodosServiceInstance } from '@/shared/services/todosAxios';
-import { TodoForm } from '@/lib/types';
+import { TExtendedTodoForm } from '@/lib/types';
 import 'easymde/dist/easymde.min.css';
 
 export default function CreateTodoPage() {
+  const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -28,19 +30,23 @@ export default function CreateTodoPage() {
     control,
     reset,
     formState: { errors }
-  } = useForm<TodoForm>({
+  } = useForm<TExtendedTodoForm>({
     defaultValues: {
       title: '',
       description: '',
-      status: 'OPEN'
+      status: 'OPEN',
+      userId: -1
     },
     resolver: zodResolver(createTodoSchema)
   });
 
-  const onSubmit: SubmitHandler<TodoForm> = async data => {
+  const onSubmit: SubmitHandler<TExtendedTodoForm> = async data => {
     try {
       setIsSubmitting(true);
-      await TodosServiceInstance.createTodos(data);
+      await TodosServiceInstance.createTodos({
+        ...data,
+        userId: (session?.user as { id?: number }).id || -1
+      });
       setIsSubmitting(false);
       reset();
       toast({
