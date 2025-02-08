@@ -61,11 +61,12 @@ NEXTAUTH_SECRET="your_secret_key"
 
 ### 6. Launching Next.js application:
 
-If the application is not containerized, run:
-
 ```bash
 npm install
 npm run dev
 ```
 
-The application will be available at http://localhost:3000
+- First you need to register user at http://localhost:3000/register
+- And then go to http://localhost:3000/login
+
+The application will be available at http://localhost:3000/todos
