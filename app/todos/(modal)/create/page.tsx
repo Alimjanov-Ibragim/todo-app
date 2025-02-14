@@ -1,26 +1,24 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm, SubmitHandler, Controller } from 'react-hook-form';
-import { useQueryClient } from '@tanstack/react-query';
-import SimpleMDE from 'react-simplemde-editor';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useSession } from 'next-auth/react';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm, Controller } from "react-hook-form";
+import SimpleMDE from "react-simplemde-editor";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useSession } from "next-auth/react";
 
-import { useToast } from '@/hooks/use-toast';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ErrorMessage } from '@/app/components';
-import { Spinner } from '@/app/components';
-import { createTodoSchema } from '@/app/validationSchemas';
-import { TodosServiceInstance } from '@/shared/services/todosAxios';
-import { TExtendedTodoForm } from '@/lib/types';
-import 'easymde/dist/easymde.min.css';
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { ErrorMessage } from "@/app/components";
+import { Spinner } from "@/app/components";
+import { createTodoSchema } from "@/app/validationSchemas";
+import { TodoForm } from "@/lib/types";
+import "easymde/dist/easymde.min.css";
+import { create } from "@/app/actions";
 
 export default function CreateTodoPage() {
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -29,39 +27,35 @@ export default function CreateTodoPage() {
     handleSubmit,
     control,
     reset,
-    formState: { errors }
-  } = useForm<TExtendedTodoForm>({
+    formState: { errors },
+  } = useForm<TodoForm>({
     defaultValues: {
-      title: '',
-      description: '',
-      status: 'OPEN',
-      userId: -1
+      title: "",
+      description: "",
+      status: "OPEN",
+      userId: session?.user?.id,
     },
-    resolver: zodResolver(createTodoSchema)
+    resolver: zodResolver(createTodoSchema),
   });
 
-  const onSubmit: SubmitHandler<TExtendedTodoForm> = async data => {
+  async function onSubmit(values: TodoForm) {
     try {
       setIsSubmitting(true);
-      await TodosServiceInstance.createTodos({
-        ...data,
-        userId: (session?.user as { id?: number }).id || -1
+      await create(values);
+      toast({
+        title: "Todo created successfully",
       });
       setIsSubmitting(false);
       reset();
+      router.push("/todos");
+    } catch (e) {
+      console.error(e);
       toast({
-        title: 'Todo created successfully'
-      });
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
-      router.push('/todos');
-    } catch (error) {
-      toast({
-        title: 'An unexpected error occured. Please try again.'
+        title: "An unexpected error occured. Please try again.",
       });
       setIsSubmitting(false);
-      console.log('error', error);
     }
-  };
+  }
 
   return (
     <div className="modal-overlay">
@@ -72,7 +66,7 @@ export default function CreateTodoPage() {
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-[10px]"
         >
-          <Input {...register('title')} placeholder="Add todo title" />
+          <Input {...register("title")} placeholder="Add todo title" />
           <ErrorMessage>{errors.title?.message}</ErrorMessage>
           <Controller
             name="description"
@@ -88,7 +82,7 @@ export default function CreateTodoPage() {
         </form>
 
         {/* Кнопка закрытия */}
-        <button onClick={() => router.push('/todos')} className="close-button">
+        <button onClick={() => router.push("/todos")} className="close-button">
           ×
         </button>
       </div>

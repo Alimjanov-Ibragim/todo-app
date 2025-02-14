@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm, SubmitHandler, Controller } from 'react-hook-form';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import SimpleMDE from 'react-simplemde-editor';
-import { useSession } from 'next-auth/react';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useForm, Controller } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import SimpleMDE from "react-simplemde-editor";
+import { useSession } from "next-auth/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useToast } from '@/hooks/use-toast';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -18,30 +18,30 @@ import {
   SelectItem,
   SelectLabel,
   SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
-import { ErrorMessage } from '@/app/components';
-import { Spinner } from '@/app/components';
-import { createTodoSchemaWithoutUserId } from '@/app/validationSchemas';
-import { TodosServiceInstance } from '@/shared/services/todosAxios';
-import { TodoForm, ExtendedTodo } from '@/lib/types';
-import 'easymde/dist/easymde.min.css';
+  SelectValue,
+} from "@/components/ui/select";
+import { ErrorMessage } from "@/app/components";
+import { Spinner } from "@/app/components";
+import { createTodoSchemaWithoutUserId } from "@/app/validationSchemas";
+import { TodosServiceInstance } from "@/shared/services/todosAxios";
+import { TodoForm, ExtendedTodo } from "@/lib/types";
+import "easymde/dist/easymde.min.css";
+import { editTodo } from "@/app/actions";
 
 export default function EditTodoPage() {
   const { data: session } = useSession();
-  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const todoId = searchParams.get('id') as string;
+  const todoId = searchParams.get("id") as string;
   const {
     data: todos,
     isLoading,
-    isError
+    isError,
   } = useQuery({
-    queryKey: ['todos'],
-    queryFn: TodosServiceInstance.fetchTodos
+    queryKey: ["todos"],
+    queryFn: TodosServiceInstance.fetchTodos,
   });
 
   const todoToEdit: ExtendedTodo = todos?.find(
@@ -53,14 +53,14 @@ export default function EditTodoPage() {
     handleSubmit,
     control,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<TodoForm>({
     defaultValues: {
-      title: '',
-      description: '',
-      status: 'OPEN'
+      title: "",
+      description: "",
+      status: "OPEN",
     },
-    resolver: zodResolver(createTodoSchemaWithoutUserId)
+    resolver: zodResolver(createTodoSchemaWithoutUserId),
   });
 
   useEffect(() => {
@@ -68,38 +68,35 @@ export default function EditTodoPage() {
       reset({
         title: todoToEdit.title,
         description: todoToEdit.description,
-        status: todoToEdit.status
+        status: todoToEdit.status,
       });
     }
   }, [todoToEdit, reset]);
 
-  const onSubmit: SubmitHandler<TodoForm> = async data => {
+  async function onSubmit(values: TodoForm) {
     try {
-      const updatedTodo = {
-        id: todoId,
-        title: data.title,
-        description: data.description,
-        status: data.status,
-        userId: (session?.user as { id?: number }).id || -1
-      };
       setIsSubmitting(true);
-      await TodosServiceInstance.editTodo(updatedTodo);
+      await editTodo({
+        title: values.title,
+        description: values.description,
+        status: values.status,
+        postId: Number(todoId),
+        userId: session?.user?.id,
+      });
+      toast({
+        title: "Todo created successfully",
+      });
       setIsSubmitting(false);
       reset();
+      router.push("/todos");
+    } catch (e) {
+      console.error(e);
       toast({
-        title: 'Todo created successfully'
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
-      router.push('/todos');
-    } catch (error) {
-      toast({
-        title: 'An unexpected error occured. Please try again.'
+        title: "An unexpected error occured. Please try again.",
       });
       setIsSubmitting(false);
-      console.log('error', error);
     }
-  };
+  }
 
   if (isLoading) return <Spinner />;
   if (isError) return <ErrorMessage>Error loading todos</ErrorMessage>;
@@ -115,7 +112,7 @@ export default function EditTodoPage() {
           onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-[10px]"
         >
-          <Input {...register('title')} placeholder="Add todo title" />
+          <Input {...register("title")} placeholder="Add todo title" />
           <ErrorMessage>{errors.title?.message}</ErrorMessage>
           <Controller
             name="description"
@@ -151,7 +148,7 @@ export default function EditTodoPage() {
         </form>
 
         {/* Кнопка закрытия */}
-        <button onClick={() => router.push('/todos')} className="close-button">
+        <button onClick={() => router.push("/todos")} className="close-button">
           ×
         </button>
       </div>
